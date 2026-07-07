@@ -14,9 +14,11 @@
 <script>
   // 言語のちらつき防止：body描画前に data-lang を確定
   (function(){
-    var KEY='setlist-lang', saved=null;
+    var KEY='setlist-lang', saved=null, forced=null;
     try{ saved=localStorage.getItem(KEY); }catch(e){}
-    var lang = saved || (((navigator.language||'ja').toLowerCase().indexOf('ja')===0) ? 'ja' : 'en');
+    try{ forced=new URLSearchParams(location.search).get('lang'); }catch(e){}
+    if(forced!=='ja' && forced!=='en') forced=null; // ?lang=en / ?lang=ja で言語を明示指定可
+    var lang = forced || saved || (((navigator.language||'ja').toLowerCase().indexOf('ja')===0) ? 'ja' : 'en');
     document.documentElement.setAttribute('data-lang', lang);
     document.documentElement.setAttribute('lang', lang);
   })();
