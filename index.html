@@ -1,16 +1,26 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" data-lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>セトリスト - シンプルなセットリスト作成アプリ</title>
-<meta name="description" content="バンドマン・演奏家のためのセットリスト作成アプリ。曲順をドラッグで並べ替え、合計演奏時間も自動計算。完全オフライン対応、画像でメンバーに即共有。">
+<meta name="description" content="バンドマン・演奏家のためのセットリスト作成アプリ。曲順をドラッグで並べ替え、合計演奏時間も自動計算。完全オフライン対応、画像でメンバーに即共有。iOS・Android対応。">
 <meta property="og:title" content="セトリスト - シンプルなセットリスト作成アプリ">
 <meta property="og:description" content="バンドマン・演奏家のためのセットリスト作成アプリ。曲順をドラッグで並べ替え、合計時間も自動計算。">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+  // 言語のちらつき防止：body描画前に data-lang を確定
+  (function(){
+    var KEY='setlist-lang', saved=null;
+    try{ saved=localStorage.getItem(KEY); }catch(e){}
+    var lang = saved || (((navigator.language||'ja').toLowerCase().indexOf('ja')===0) ? 'ja' : 'en');
+    document.documentElement.setAttribute('data-lang', lang);
+    document.documentElement.setAttribute('lang', lang);
+  })();
+</script>
 <style>
   :root {
     --bg: #fff7ed;
@@ -49,6 +59,10 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
   }
 
+  /* i18n 出し分け */
+  [data-lang="ja"] .en { display: none !important; }
+  [data-lang="en"] .ja { display: none !important; }
+
   .container {
     max-width: 1100px;
     margin: 0 auto;
@@ -58,7 +72,8 @@
   }
 
   header { padding: 28px 0; position: relative; z-index: 10; }
-  .nav { display: flex; justify-content: space-between; align-items: center; }
+  .nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .nav-right { display: flex; align-items: center; gap: 14px; }
 
   .logo {
     font-family: 'Fraunces', serif;
@@ -85,6 +100,38 @@
     font-family: 'Zen Kaku Gothic New', sans-serif;
   }
 
+  /* 言語切替プルダウン */
+  .lang-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .lang-switch svg { width: 15px; height: 15px; color: var(--ink-soft); position: absolute; left: 12px; pointer-events: none; }
+  .lang-switch select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 30px 8px 32px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .lang-switch select:hover { border-color: var(--accent-bright); }
+  .lang-switch::after {
+    content: '';
+    position: absolute; right: 14px;
+    width: 7px; height: 7px;
+    border-right: 1.5px solid var(--ink-soft);
+    border-bottom: 1.5px solid var(--ink-soft);
+    transform: rotate(45deg) translateY(-2px);
+    pointer-events: none;
+  }
+
   .nav-cta {
     background: var(--ink);
     color: var(--paper);
@@ -94,6 +141,7 @@
     font-weight: 500;
     font-size: 14px;
     transition: transform 0.2s, background 0.2s;
+    white-space: nowrap;
   }
   .nav-cta:hover { background: var(--accent-dark); transform: translateY(-1px); }
 
@@ -132,17 +180,20 @@
     font-size: clamp(16px, 2vw, 19px);
     color: var(--ink-soft);
     max-width: 580px;
-    margin-bottom: 44px;
+    margin-bottom: 40px;
     line-height: 1.8;
   }
 
-  .hero-cta-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .hero-cta-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .hero-meta { font-size: 13px; color: var(--ink-soft); }
 
-  .btn-primary {
+  /* ストアボタン */
+  .store-btns { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .store-btn {
     background: var(--ink);
     color: var(--paper);
     text-decoration: none;
-    padding: 16px 32px;
+    padding: 14px 26px;
     border-radius: 100px;
     font-weight: 500;
     font-size: 15px;
@@ -151,15 +202,34 @@
     gap: 10px;
     transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
     box-shadow: 0 4px 16px rgba(61, 31, 10, 0.18);
+    line-height: 1.2;
   }
-  .btn-primary:hover {
+  .store-btn:hover {
     background: var(--accent-dark);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(217, 122, 44, 0.35);
   }
-  .btn-primary svg { width: 18px; height: 18px; }
-
-  .hero-meta { font-size: 13px; color: var(--ink-soft); }
+  .store-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .store-btn small { display: block; font-size: 10px; opacity: 0.75; font-weight: 400; }
+  .store-btn b { font-weight: 600; }
+  /* 近日公開（無効状態） */
+  .store-btn.soon {
+    background: var(--paper);
+    color: var(--ink-soft);
+    border: 1px solid var(--rule);
+    box-shadow: none;
+    cursor: default;
+  }
+  .store-btn.soon:hover { background: var(--paper); transform: none; box-shadow: none; }
+  .store-btn.soon .soon-badge {
+    font-size: 10px;
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+    padding: 1px 8px;
+    border-radius: 100px;
+    font-weight: 600;
+    margin-left: 2px;
+  }
 
   .hero-deco {
     position: absolute;
@@ -538,20 +608,11 @@
     margin-right: auto;
   }
 
-  .btn-light {
-    background: var(--paper);
-    color: var(--ink);
-    text-decoration: none;
-    padding: 18px 36px;
-    border-radius: 100px;
-    font-weight: 500;
-    font-size: 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .btn-light:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+  .final-cta .store-btns { justify-content: center; }
+  .final-cta .store-btn { background: var(--paper); color: var(--ink); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .final-cta .store-btn:hover { background: white; }
+  .final-cta .store-btn.soon { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.3); }
+  .final-cta .store-btn.soon .soon-badge { background: rgba(255,255,255,0.22); color: white; }
 
   /* FOOTER */
   footer { background: var(--ink); color: var(--accent-soft); padding: 48px 0; }
@@ -580,6 +641,7 @@
     .dev-avatar { width: 140px; height: 140px; margin: 0 auto; }
     .hero-deco { width: 300px; height: 300px; top: 40px; right: -100px; }
     .phone { width: 260px; transform: rotate(-1deg); }
+    .nav-cta { display: none; }
   }
 </style>
 </head>
@@ -592,7 +654,16 @@
         <span class="logo-mark">セ</span>
         <span>セトリスト</span>
       </div>
-      <a href="https://apps.apple.com/app/%E3%82%BB%E3%83%88%E3%83%AA%E3%82%B9%E3%83%88/id6767007246" class="nav-cta">App Storeで入手</a>
+      <div class="nav-right">
+        <label class="lang-switch" aria-label="Language">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <select id="langSelect">
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+        <a href="#download" class="nav-cta"><span class="ja">ダウンロード</span><span class="en">Download</span></a>
+      </div>
     </nav>
   </div>
 </header>
@@ -600,18 +671,32 @@
 <section class="hero">
   <div class="hero-deco"></div>
   <div class="container">
-    <span class="hero-eyebrow">バンドマン・演奏家のためのアプリ</span>
-    <h1>セトリ作り、<br><em>もうメモ帳でやらなくていい。</em></h1>
-    <p class="hero-sub">
+    <span class="hero-eyebrow"><span class="ja">バンドマン・演奏家のためのアプリ</span><span class="en">An app for bands & performers</span></span>
+    <h1 class="ja">セトリ作り、<br><em>もうメモ帳でやらなくていい。</em></h1>
+    <h1 class="en">Setlist building,<br><em>no more wrestling with a notes app.</em></h1>
+    <p class="hero-sub ja">
       持ち曲を登録して、ドラッグで並べ替え。合計演奏時間もリアルタイムで計算します。完成したセトリは画像にしてLINEでメンバーに即共有。ライブ前のあのバタバタを、ちょっとだけラクにするアプリです。
     </p>
+    <p class="hero-sub en">
+      Register your songs and reorder them with a drag. The total runtime is calculated in real time. Turn your finished setlist into an image and share it with your bandmates in one tap. An app to make the pre-gig scramble just a little easier.
+    </p>
     <div class="hero-cta-row">
-      <a href="https://apps.apple.com/app/%E3%82%BB%E3%83%88%E3%83%AA%E3%82%B9%E3%83%88/id6767007246" class="btn-primary">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.41-1.09-.47-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.41C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-        App Storeで入手
-      </a>
-      <span class="hero-meta">無料 / 広告削除 ¥500 / 日本語・英語対応</span>
+      <div class="store-btns">
+        <!-- iOS: 公開中 -->
+        <a href="https://apps.apple.com/app/%E3%82%BB%E3%83%88%E3%83%AA%E3%82%B9%E3%83%88/id6767007246" class="store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.41-1.09-.47-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.41C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          <span><small class="ja">iPhone / iPad</small><small class="en">iPhone / iPad</small><b>App Store</b></span>
+        </a>
+        <!-- Android: 公開後、下記の soon ボタンを次のリンクに差し替える:
+             <a href="https://play.google.com/store/apps/details?id=com.setlist.android" class="store-btn"> ... </a> -->
+        <span class="store-btn soon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.3c-.3.3-.5.7-.5 1.3v16.8c0 .6.2 1 .5 1.3l.1.1L13 12.1v-.2L3.7 2.2zM16.5 15.6l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1 .6 1 1.6 0 2.2zM13.4 12.4l3.1 3.1-9 5.2c-.5.3-.9.2-1.2-.1zM6.3 3.3l7.1 8-3.1 3.1L6.3 3.3z"/></svg>
+          <span><small class="ja">Android</small><small class="en">Android</small><b>Google Play</b></span>
+          <span class="soon-badge ja">近日公開</span><span class="soon-badge en">Coming soon</span>
+        </span>
+      </div>
     </div>
+    <p class="hero-meta"><span class="ja">無料 / 広告削除 ¥500 / 日本語・英語対応</span><span class="en">Free / Remove ads ¥500 / Japanese & English</span></p>
   </div>
 </section>
 
@@ -626,8 +711,8 @@
               <span class="app-statusbar-icons">●●● 📶 🔋</span>
             </div>
             <div class="app-toolbar">
-              <div class="app-btn-pill">閉じる</div>
-              <div class="app-title">持ち曲一覧</div>
+              <div class="app-btn-pill"><span class="ja">閉じる</span><span class="en">Close</span></div>
+              <div class="app-title"><span class="ja">持ち曲一覧</span><span class="en">Songs</span></div>
               <div class="app-btn-circle">+</div>
             </div>
           </div>
@@ -647,7 +732,7 @@
 
             <div class="song-row">
               <div class="song-main">
-                <div class="song-name">Father kelly's Set</div>
+                <div class="song-name">Father Kelly's Set</div>
                 <div class="song-tags">
                   <span class="song-tag">アップテンポ</span>
                   <span class="song-tag">トラッド</span>
@@ -658,7 +743,7 @@
 
             <div class="song-row">
               <div class="song-main">
-                <div class="song-name">Fox in the town セット</div>
+                <div class="song-name">Fox in the Town セット</div>
                 <div class="song-tags">
                   <span class="song-tag">アップテンポ</span>
                   <span class="song-tag">トラッド</span>
@@ -680,7 +765,7 @@
 
             <div class="song-row">
               <div class="song-main">
-                <div class="song-name">Little diamond Set</div>
+                <div class="song-name">Little Diamond Set</div>
                 <div class="song-tags">
                   <span class="song-tag">アップテンポ</span>
                   <span class="song-tag">トラッド</span>
@@ -707,17 +792,27 @@
 
 <section class="story">
   <div class="container">
-    <div class="section-label">— なぜ作ったか</div>
-    <h2 class="section-title">セトリ作り、地味だけど大変じゃない？</h2>
+    <div class="section-label"><span class="ja">— なぜ作ったか</span><span class="en">— Why I made it</span></div>
+    <h2 class="section-title ja">セトリ作り、地味だけど大変じゃない？</h2>
+    <h2 class="section-title en">Building a setlist — a small job, but a real hassle, right?</h2>
     <div class="story-body">
-      <p>
+      <p class="ja">
         持ち時間を考えながら、お客さんが飽きないようにバランスよく曲を並べる。一度作っても結局あとから並べ替える。<span class="highlight">そのたびにメモ帳でコピペし直すのが面倒</span>でした。
       </p>
-      <p>
+      <p class="en">
+        You arrange songs to fit your time slot, balancing them so the audience never gets bored. And even once it's done, you end up reordering later. <span class="highlight">Re-copy-pasting in a notes app every time was such a chore.</span>
+      </p>
+      <p class="ja">
         ドラッグで順番を変えられるリッチなメモアプリも試しましたが、持ち曲を登録しておく機能がなくて、毎回手打ち。これじゃない感がずっとありました。
       </p>
-      <p>
+      <p class="en">
+        I tried fancy notes apps that let you drag to reorder, but none of them let you save a song library — so I was retyping everything each time. It never quite felt right.
+      </p>
+      <p class="ja">
         そんなとき、バンドメンバーから「こういうアプリあったらいいよね」というアイデアをもらって、自分のために作りはじめたのが「セトリスト」です。<span class="highlight">同じことで困っている演奏家の人に届けば嬉しい</span>です。
+      </p>
+      <p class="en">
+        Then a bandmate said, "wouldn't an app like this be great?" — and I started building Setlist for myself. <span class="highlight">I'd be glad if it reaches other performers with the same trouble.</span>
       </p>
     </div>
   </div>
@@ -725,59 +820,66 @@
 
 <section class="features" id="features">
   <div class="container">
-    <div class="section-label">— 機能紹介</div>
-    <h2 class="section-title">必要なものだけ、ちゃんと作りました。</h2>
+    <div class="section-label"><span class="ja">— 機能紹介</span><span class="en">— Features</span></div>
+    <h2 class="section-title ja">必要なものだけ、ちゃんと作りました。</h2>
+    <h2 class="section-title en">Just what you need — and made properly.</h2>
 
     <div class="features-grid">
       <div class="feature">
         <div class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         </div>
-        <span class="feature-tag">並べ替え</span>
-        <h3>ドラッグで曲順変更</h3>
-        <p>ホールド＆ドラッグで直感的に曲順を入れ替え。合計演奏時間も自動で再計算されます。</p>
+        <span class="feature-tag ja">並べ替え</span><span class="feature-tag en">Reorder</span>
+        <h3 class="ja">ドラッグで曲順変更</h3><h3 class="en">Drag to reorder</h3>
+        <p class="ja">ホールド＆ドラッグで直感的に曲順を入れ替え。合計演奏時間も自動で再計算されます。</p>
+        <p class="en">Swap song order intuitively with hold &amp; drag. The total runtime recalculates automatically.</p>
       </div>
 
       <div class="feature">
         <div class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </div>
-        <span class="feature-tag">こだわり</span>
-        <h3>持ち曲は4通りで登録</h3>
-        <p>手入力、ミュージックApp、音声ファイル（.m4a等）、CSV一括インポートに対応。最初の登録のハードルを徹底的に下げました。</p>
+        <span class="feature-tag ja">こだわり</span><span class="feature-tag en">Detail</span>
+        <h3 class="ja">持ち曲は4通りで登録</h3><h3 class="en">Add songs 4 ways</h3>
+        <p class="ja">手入力、端末の音楽ライブラリ、音声ファイル（.m4a等）、CSV一括インポートに対応。最初の登録のハードルを徹底的に下げました。</p>
+        <p class="en">Manual entry, your device's music library, audio files (.m4a etc.), and bulk CSV import. We made getting started as painless as possible.</p>
       </div>
 
       <div class="feature">
         <div class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         </div>
-        <span class="feature-tag">こだわり</span>
-        <h3>タグで自由に分類</h3>
-        <p>ジャンル、使用楽器、難易度。自分のルールでタグを作って、選曲のときに役立てられます。</p>
+        <span class="feature-tag ja">こだわり</span><span class="feature-tag en">Detail</span>
+        <h3 class="ja">タグで自由に分類</h3><h3 class="en">Organize with tags</h3>
+        <p class="ja">ジャンル、使用楽器、難易度。自分のルールでタグを作って、選曲のときに役立てられます。</p>
+        <p class="en">Genre, instrument, difficulty — make tags with your own rules and use them when picking songs.</p>
       </div>
 
       <div class="feature">
         <div class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         </div>
-        <h3>画像でサクッと共有</h3>
-        <p>完成したセトリは画像化して、LINEやSNSでメンバーに一発で共有。当日の確認もスムーズです。</p>
+        <h3 class="ja">画像でサクッと共有</h3><h3 class="en">Share as an image</h3>
+        <p class="ja">完成したセトリは画像化して、LINEやSNSでメンバーに一発で共有。当日の確認もスムーズです。</p>
+        <p class="en">Turn your finished setlist into an image and share it to LINE or social media in one tap. Easy to check on the day, too.</p>
       </div>
 
       <div class="feature">
         <div class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         </div>
-        <h3>迷う曲は保留エリアへ</h3>
-        <p>「入れるか迷ってる」曲を一時的にキープ。本セトリと分けて検討できます。</p>
+        <h3 class="ja">迷う曲は保留エリアへ</h3><h3 class="en">Park songs in the Hold area</h3>
+        <p class="ja">「入れるか迷ってる」曲を一時的にキープ。本セトリと分けて検討できます。</p>
+        <p class="en">Keep songs you're "not sure about" on hold, separate from your main set while you decide.</p>
       </div>
 
       <div class="feature">
         <div class="feature-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </div>
-        <h3>完全オフライン対応</h3>
-        <p>ライブハウスやスタジオの地下で電波が無くてもちゃんと動きます。データは端末内に保存。</p>
+        <h3 class="ja">完全オフライン対応</h3><h3 class="en">Works fully offline</h3>
+        <p class="ja">ライブハウスやスタジオの地下で電波が無くてもちゃんと動きます。データは端末内に保存。</p>
+        <p class="en">Works even with no signal in a basement live house or studio. All data stays on your device.</p>
       </div>
     </div>
   </div>
@@ -790,13 +892,20 @@
         <img src="https://avatars.githubusercontent.com/u/277163911?v=4" alt="セトリスト開発者のアバター" loading="lazy">
       </div>
       <div>
-        <div class="section-label">— 作った人</div>
-        <p class="dev-quote">「自分が欲しかったから作りました。同じことで困ってる人に使ってもらえたら嬉しい。」</p>
-        <p class="dev-meta">
+        <div class="section-label"><span class="ja">— 作った人</span><span class="en">— The maker</span></div>
+        <p class="dev-quote ja">「自分が欲しかったから作りました。同じことで困ってる人に使ってもらえたら嬉しい。」</p>
+        <p class="dev-quote en">"I made it because I wanted it myself. I'd be happy if others with the same trouble use it."</p>
+        <p class="dev-meta ja">
           <strong>shigirich</strong><br>
           アイルランド伝統音楽のユニットで、東京・神奈川を中心に演奏活動中。<br>
           担当楽器はアイリッシュ・ブズーキと8弦バリトンギター。<br>
           活動はもうすぐ10周年、月1ペースでライブを続けています。
+        </p>
+        <p class="dev-meta en">
+          <strong>shigirich</strong><br>
+          Performs Irish traditional music in a unit, mainly around Tokyo and Kanagawa.<br>
+          Plays Irish bouzouki and 8-string baritone guitar.<br>
+          Nearly 10 years in, still playing live about once a month.
         </p>
       </div>
     </div>
@@ -805,29 +914,40 @@
 
 <section class="faq">
   <div class="container">
-    <div class="section-label">— よくある質問</div>
-    <h2 class="section-title">気になりそうなこと、先にお答えします。</h2>
+    <div class="section-label"><span class="ja">— よくある質問</span><span class="en">— FAQ</span></div>
+    <h2 class="section-title ja">気になりそうなこと、先にお答えします。</h2>
+    <h2 class="section-title en">Answering the things you might be wondering.</h2>
 
     <div class="faq-list">
       <div class="faq-item">
-        <div class="faq-q">完全無料で使えますか？</div>
-        <div class="faq-a">基本機能はすべて無料でお使いいただけます。広告を非表示にしたい場合のみ、買い切り¥500の課金オプションがあります。</div>
+        <div class="faq-q ja">完全無料で使えますか？</div>
+        <div class="faq-q en">Is it completely free?</div>
+        <div class="faq-a ja">基本機能はすべて無料でお使いいただけます。広告を非表示にしたい場合のみ、買い切り¥500の課金オプションがあります。</div>
+        <div class="faq-a en">All core features are free. There's a one-time ¥500 option only if you'd like to hide ads.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">バンド以外でも使えますか？</div>
-        <div class="faq-a">弾き語り、セッション、結婚式の余興、合唱、吹奏楽など、人前で複数曲演奏するすべての方に使ってもらえると嬉しいです。「こんな使い方してます」という発見があったら、ぜひ教えてください。</div>
+        <div class="faq-q ja">バンド以外でも使えますか？</div>
+        <div class="faq-q en">Can I use it outside a band?</div>
+        <div class="faq-a ja">弾き語り、セッション、結婚式の余興、合唱、吹奏楽など、人前で複数曲演奏するすべての方に使ってもらえると嬉しいです。「こんな使い方してます」という発見があったら、ぜひ教えてください。</div>
+        <div class="faq-a en">Solo performances, sessions, wedding entertainment, chorus, wind ensemble — anyone who performs several songs in front of people is welcome. If you find a new way to use it, I'd love to hear about it.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">電波の無いライブハウスでも使えますか？</div>
-        <div class="faq-a">はい、完全オフラインで動作します。地下スタジオやライブハウスでも問題なくお使いいただけます。</div>
+        <div class="faq-q ja">電波の無いライブハウスでも使えますか？</div>
+        <div class="faq-q en">Does it work in a venue with no signal?</div>
+        <div class="faq-a ja">はい、完全オフラインで動作します。地下スタジオやライブハウスでも問題なくお使いいただけます。</div>
+        <div class="faq-a en">Yes — it works fully offline. No problem in basement studios or live houses.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">持ち曲の登録が面倒そうです</div>
-        <div class="faq-a">手入力のほか、iPhoneのミュージックAppから取り込み、音声ファイル（.m4a等）からの登録、CSVファイルからの一括インポートに対応しています。自分に合った方法を選んでください。</div>
+        <div class="faq-q ja">持ち曲の登録が面倒そうです</div>
+        <div class="faq-q en">Registering songs sounds tedious.</div>
+        <div class="faq-a ja">手入力のほか、端末の音楽ライブラリからの取り込み、音声ファイル（.m4a等）からの登録、CSVファイルからの一括インポートに対応しています。自分に合った方法を選んでください。</div>
+        <div class="faq-a en">Besides manual entry, you can import from your device's music library, from audio files (.m4a etc.), and bulk-import from a CSV file. Pick whatever suits you.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">Android版はありますか？</div>
-        <div class="faq-a">現在はiOS版のみのご提供です。ご要望が多ければ検討します。</div>
+        <div class="faq-q ja">Android版はありますか？</div>
+        <div class="faq-q en">Is there an Android version?</div>
+        <div class="faq-a ja">はい、Android版はGoogle Playにて<strong>近日公開予定</strong>です（現在準備中）。iOS版はApp Storeで公開中です。公開までもう少しお待ちください。</div>
+        <div class="faq-a en">Yes — the Android version is <strong>coming soon</strong> to Google Play (currently in preparation). The iOS version is available now on the App Store.</div>
       </div>
     </div>
   </div>
@@ -835,12 +955,21 @@
 
 <section class="final-cta" id="download">
   <div class="container">
-    <h2>次のライブのセトリ、<br><em>ちょっとラクに作ってみませんか。</em></h2>
-    <p>App Storeから無料でダウンロードできます。気に入ったら、Xでぜひ感想を聞かせてください。</p>
-    <a href="https://apps.apple.com/app/%E3%82%BB%E3%83%88%E3%83%AA%E3%82%B9%E3%83%88/id6767007246" class="btn-light">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.41-1.09-.47-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.41C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-      App Storeで入手
-    </a>
+    <h2 class="ja">次のライブのセトリ、<br><em>ちょっとラクに作ってみませんか。</em></h2>
+    <h2 class="en">Make your next setlist<br><em>a little easier to build.</em></h2>
+    <p class="ja">App Storeから無料でダウンロード（Android版は近日公開）。気に入ったら、Xでぜひ感想を聞かせてください。</p>
+    <p class="en">Download free from the App Store (Android coming soon). If you like it, tell me on X.</p>
+    <div class="store-btns">
+      <a href="https://apps.apple.com/app/%E3%82%BB%E3%83%88%E3%83%AA%E3%82%B9%E3%83%88/id6767007246" class="store-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.41-1.09-.47-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.41C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+        <span><small>iPhone / iPad</small><b>App Store</b></span>
+      </a>
+      <span class="store-btn soon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.3c-.3.3-.5.7-.5 1.3v16.8c0 .6.2 1 .5 1.3l.1.1L13 12.1v-.2L3.7 2.2zM16.5 15.6l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1 .6 1 1.6 0 2.2zM13.4 12.4l3.1 3.1-9 5.2c-.5.3-.9.2-1.2-.1zM6.3 3.3l7.1 8-3.1 3.1L6.3 3.3z"/></svg>
+        <span><small>Android</small><b>Google Play</b></span>
+        <span class="soon-badge ja">近日公開</span><span class="soon-badge en">Coming soon</span>
+      </span>
+    </div>
   </div>
 </section>
 
@@ -855,12 +984,30 @@
       </div>
       <div class="footer-links">
         <a href="https://twitter.com/shigirich" target="_blank" rel="noopener">X (@shigirich)</a>
-        <a href="https://shigi0919.github.io/setlist-pages/privacy/ja.html" target="_blank" rel="noopener">プライバシーポリシー</a>
+        <a class="ja" href="https://shigi0919.github.io/setlist-pages/privacy/ja.html" target="_blank" rel="noopener">プライバシーポリシー</a>
+        <a class="en" href="https://shigi0919.github.io/setlist-pages/privacy/en.html" target="_blank" rel="noopener">Privacy Policy</a>
       </div>
       <div class="footer-copy">© 2025 Masayoshi Shigihara</div>
     </div>
   </div>
 </footer>
+
+<script>
+  (function(){
+    var KEY='setlist-lang';
+    var sel=document.getElementById('langSelect');
+    var current=document.documentElement.getAttribute('data-lang')||'ja';
+    if(sel){
+      sel.value=current;
+      sel.addEventListener('change',function(){
+        var lang=sel.value;
+        document.documentElement.setAttribute('data-lang',lang);
+        document.documentElement.setAttribute('lang',lang);
+        try{ localStorage.setItem(KEY,lang); }catch(e){}
+      });
+    }
+  })();
+</script>
 
 </body>
 </html>
