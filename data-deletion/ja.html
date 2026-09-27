@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データの削除について - セトリスト</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+            line-height: 1.8;
+            color: #3d3632;
+            background: #fff;
+            padding: 20px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        header {
+            border-bottom: 3px solid #e8873a;
+            padding-bottom: 16px;
+            margin-bottom: 32px;
+        }
+        h1 { font-size: 1.5rem; color: #e8873a; }
+        .app-name { font-size: 0.9rem; color: #888; margin-top: 4px; }
+        h2 {
+            font-size: 1.1rem;
+            color: #3d3632;
+            margin-top: 28px;
+            margin-bottom: 8px;
+            padding-left: 12px;
+            border-left: 3px solid #e8873a;
+        }
+        p, li { font-size: 0.95rem; margin-bottom: 8px; }
+        ul, ol { padding-left: 24px; }
+        .lang-switch { text-align: right; margin-bottom: 12px; }
+        .lang-switch a { color: #e8873a; text-decoration: none; font-size: 0.9rem; }
+        .steps {
+            background: #fdf7f2;
+            border: 1px solid #f0d9c4;
+            border-radius: 8px;
+            padding: 20px 20px 20px 44px;
+            margin: 16px 0 24px;
+        }
+        .steps li { margin-bottom: 10px; }
+        .steps li:last-child { margin-bottom: 0; }
+        .cta {
+            display: inline-block;
+            background: #e8873a;
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            margin: 8px 0 16px;
+        }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0 8px; }
+        th, td {
+            text-align: left;
+            vertical-align: top;
+            padding: 12px 14px;
+            font-size: 0.92rem;
+            border-bottom: 1px solid #eee;
+        }
+        th { width: 30%; background: #faf8f6; font-weight: 600; }
+        a { color: #e8873a; }
+        footer {
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1px solid #ddd;
+            font-size: 0.85rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="lang-switch"><a href="en.html">English</a></div>
+    <header>
+        <h1>データの削除について</h1>
+        <div class="app-name">セトリスト（Setlist） / 提供元: Shigi Studio</div>
+    </header>
+
+    <p>アプリ「セトリスト」は、アカウント登録を必要としません。セットリストや持ち曲などお客様が作成したデータは、お使いの端末内にのみ保存され、外部のサーバーへ送信されることはありません。</p>
+
+    <h2>データの削除をご依頼いただく手順</h2>
+    <ol class="steps">
+        <li>下のボタンからお問い合わせフォームを開きます。</li>
+        <li>お問い合わせ内容に「<strong>データ削除の依頼</strong>」とご記入ください。</li>
+        <li>返信先のメールアドレスをご記入のうえ、送信してください。</li>
+        <li>ご依頼を確認しだい、<strong>30日以内</strong>に削除を行い、完了をメールでご連絡します。</li>
+    </ol>
+
+    <p><a class="cta" href="https://forms.gle/ApM6YdchssY6Kn9H7" target="_blank" rel="noopener">お問い合わせフォームを開く</a></p>
+
+    <p>フォームをご利用になれない場合は、<a href="mailto:shigi.studio.app.support@gmail.com">shigi.studio.app.support@gmail.com</a> 宛にメールでもお受けします。</p>
+
+    <h2>削除・保持されるデータの種類と保持期間</h2>
+    <table>
+        <tr>
+            <th>セットリスト・持ち曲などのデータ</th>
+            <td>
+                <strong>外部には送信していません。</strong>お使いの端末内にのみ保存されます。<br>
+                アプリ内の操作で削除できるほか、アプリをアンインストールすると端末から完全に削除されます。開発者側には保持していないため、削除のご依頼は不要です。
+            </td>
+        </tr>
+        <tr>
+            <th>利用状況の分析データ</th>
+            <td>
+                どの機能がどの程度使われたかという匿名のイベント情報です（PostHog を利用）。氏名・メールアドレス等、個人を特定する情報は含みません。<br>
+                <strong>保持期間: 収集から最長1年。</strong>経過後は自動的に削除されます。それ以前の削除をご希望の場合は、上記の手順でご依頼ください。
+            </td>
+        </tr>
+        <tr>
+            <th>広告に関連するデータ</th>
+            <td>
+                広告の配信のため Google AdMob が広告ID・IPアドレス等を取得します。これらは Google が管理しており、保持期間は
+                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google のプライバシーポリシー</a>に従います。<br>
+                広告IDは、お使いの端末の設定（Android: 設定 → Google → 広告 / iOS: 設定 → プライバシーとセキュリティ → トラッキング）からいつでもリセット・削除できます。
+            </td>
+        </tr>
+    </table>
+
+    <h2>アカウントの削除について</h2>
+    <p>本アプリはアカウントの作成・ログインの機能を持たないため、削除するアカウントはありません。</p>
+
+    <footer>
+        <p><a href="../privacy/ja.html">プライバシーポリシー</a> ・ <a href="../index.html">セトリスト トップページ</a></p>
+        <p>最終更新日: 2026年9月27日</p>
+    </footer>
+</body>
+</html>
