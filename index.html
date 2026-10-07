@@ -48,6 +48,8 @@
     color: var(--ink);
     line-height: 1.7;
     font-feature-settings: "palt";
+    /* 保険。ただし iOS Safari はこれだけでは横はみ出しを抑えないので、
+       はみ出す要素の側（.hero）で閉じ込めること。 */
     overflow-x: hidden;
   }
 
@@ -148,7 +150,13 @@
   .nav-cta:hover { background: var(--accent-dark); transform: translateY(-1px); }
 
   /* HERO */
-  .hero { padding: 80px 0 100px; position: relative; }
+  /* overflow:hidden は .hero-deco を閉じ込めるため。
+     デコの円は right:-120px（スマホでは -100px）で右端からはみ出す作りになっていて、
+     そのぶん文書の幅が画面より広くなる。iOS Safari はページ全体を縮小して収めようとするので、
+     375pt の端末では 375/475 ＝ 約8割に縮み、右に地色の帯が残って「左寄り」に見えていた。
+     body の overflow-x:hidden では止まらない（iOS Safari はこれを無視する）。
+     円は意図どおり右端まで届いたまま、画面の外へ出る分だけが切り落とされる。 */
+  .hero { padding: 80px 0 100px; position: relative; overflow: hidden; }
 
   .hero-eyebrow {
     display: inline-block;
