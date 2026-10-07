@@ -205,6 +205,15 @@
      余白: 両社とも最小クリアスペースは「バッジ高さの1/4」＝12px。gap は 16px でこれを満たす。
      ホバーで動かしたり色を変えたりしない。Apple は「バッジをアニメーションさせない」、
      Google は「効果を加えない」と明記しているため。 */
+  /* 日本語の折り返しを文節で止める。
+     inline-block にした塊は行をまたいで割れないので、画面幅が変わっても
+     「もうメモ帳で / やらなくていい。」のような切れ方になる。
+     幅ごとに <br> を出し分ける方法と違って、320pxでも430pxでも文字サイズを
+     大きくした設定でも勝手に追従する。
+     word-break:auto-phrase なら1行で済むが Safari が未対応なのでこの方法を使う。
+     ⚠️ span 同士の間に改行や空白を入れないこと。半角スペースとして出てしまう。 */
+  .phrase { display: inline-block; }
+
   .store-btns { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
   .store-badge { display: inline-block; line-height: 0; }
   .store-badge img { height: 48px; width: auto; display: block; }
@@ -611,11 +620,20 @@
     .hero { padding: 50px 0 70px; }
     .mockup-section { padding-bottom: 70px; }
     .story, .features, .developer, .faq, .final-cta { padding: 70px 0; }
+    /* 横1列のままだと1リンクが3行に割れるので、リンク単位で折り返す */
+    .footer-links { flex-wrap: wrap; gap: 14px 20px; }
     .dev-card { grid-template-columns: 1fr; gap: 32px; text-align: center; }
     .dev-avatar { width: 140px; height: 140px; margin: 0 auto; }
     .hero-deco { width: 300px; height: 300px; top: 40px; right: -100px; }
     .phone { width: 260px; transform: rotate(-1deg); }
     .nav-cta { display: none; }
+  }
+
+  /* 320px 級の端末では h1 が 38px のままだと「やらなくていい。」(297.9px) が
+     内容幅 272px に収まらず、「い。」だけ次行に落ちる。ここだけ一段小さくする。
+     375px 以上には影響させない。 */
+  @media (max-width: 360px) {
+    .hero h1 { font-size: 33px; }
   }
 </style>
 </head>
@@ -646,7 +664,7 @@
   <div class="hero-deco"></div>
   <div class="container">
     <span class="hero-eyebrow"><span class="ja">バンドマン・演奏家のためのアプリ</span><span class="en">An app for bands & performers</span></span>
-    <h1 class="ja">セトリ作り、<br><em>もうメモ帳でやらなくていい。</em></h1>
+    <h1 class="ja">セトリ作り、<br><em><span class="phrase">もうメモ帳で</span><span class="phrase">やらなくていい。</span></em></h1>
     <h1 class="en">Setlist building,<br><em>no more wrestling with a notes app.</em></h1>
     <p class="hero-sub ja">
       持ち曲を登録して、ドラッグで並べ替え。合計演奏時間もリアルタイムで計算します。完成したセトリは画像にしてLINEでメンバーに即共有。ライブ前のあのバタバタを、ちょっとだけラクにするアプリです。
@@ -933,9 +951,9 @@
 
 <section class="final-cta" id="download">
   <div class="container">
-    <h2 class="ja">次のライブのセトリ、<br><em>ちょっとラクに作ってみませんか。</em></h2>
+    <h2 class="ja">次のライブのセトリ、<br><em><span class="phrase">ちょっとラクに</span><span class="phrase">作ってみませんか。</span></em></h2>
     <h2 class="en">Make your next setlist<br><em>a little easier to build.</em></h2>
-    <p class="ja">App Store ・ Google Play から無料でダウンロード。気に入ったら、Xでぜひ感想を聞かせてください。</p>
+    <p class="ja"><span class="phrase">App Store ・ Google Play から</span><span class="phrase">無料でダウンロード。</span><br><span class="phrase">気に入ったら、</span><span class="phrase">Xでぜひ感想を</span><span class="phrase">聞かせてください。</span></p>
     <p class="en">Download free from the App Store or Google Play. If you like it, tell me on X.</p>
     <div class="store-btns">
       <!-- ストアバッジは Apple / Google の公式素材（assets/badges/）。言語は [data-lang] で出し分ける。
