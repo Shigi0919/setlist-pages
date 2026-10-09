@@ -1,0 +1,6 @@
+
+# チラシの入稿データはここに置かない。
+# setlist-pages は GitHub Pages で一般公開されているため、
+# 入稿用 PDF やデザインソースを置くと公開物になる。
+# 実体は非公開リポジトリ ios-app-set-list の flyer/ に移動済み（2026-10-09）。
+flyer/
